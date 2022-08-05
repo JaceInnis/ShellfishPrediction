@@ -14,14 +14,14 @@ ndays = (((year(end)-2012)*365)+yday(end))
 for (i in 1:ndays) {
 
   if(i == 1){
-    dfram = data.frame(date = NA, site = NA)
+    dfram = data.frame(date = ymd(start), site = NA)
   }
 
 x = start + (i-1)
   
 dfram[i,1] = x
 
- for (j in 1:nrow(data)) {
+ for (j in 1:(nrow(data)-1)) {
    if(
      x >= data$date[j] & x < data$date[j+1]
    ){
