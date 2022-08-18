@@ -11,17 +11,16 @@ list = date + runif(600, 1, 3574)
 # ------------------the chunk below should be ran in the first instance ---------------------
 
 # temp = wttolist(depth = 10, date = "20100101", interval = 7, ROI = surigaostrait, scale = 10000)
-# temp = geetodf(temp)
-# temp$water_temp_10 = (temp$water_temp_10*0.001)+20
-# temp$date = ymd(20100101)
+# temp = mean((geetodf(temp)$water_temp_10*0.001)+20)
+# temp = data.frame(date = "2010-01-01", temp = temp)
 # red = temp
+# red = red[,1:2]
+
 
 for (i in 1:length(list)) {
   temp = wttolist(depth = 10, date = list[i], interval = 7, ROI = surigaostrait, scale = 10000)
-  temp = geetodf(temp)
-  temp$water_temp_10 = (temp$water_temp_10*0.001)+20
-  temp$date = ymd(list[i])
-  red = rbind(red, temp)
+  temp = mean((geetodf(temp)$water_temp_10*0.001)+20)
+  red[(nrow(red)+1),] = c(as.character(list[i]), temp)
   print(i)
   }
 
@@ -29,16 +28,23 @@ red$day = yday(red$date)
 
 #write.csv(red, "tempANNO.csv")
 
-SSTlm <- lm(water_temp_10 ~ sin((2*pi/365)*day)+cos((2*pi/365)*day)
+#write.csv(red, "tempANNOavg.csv")
+
+red = read.csv("tempANNOavg.csv")
+
+SSTlm <- lm(temp ~ sin((2*pi/365)*day)+cos((2*pi/365)*day)
             +sin((4*pi/365)*day)+cos((4*pi/365)*day),data=red)
 
-plot(water_temp_10~day,data=red)
+plot(temp~day,data=red)
 
-res = predict(SSTlm, data.frame(day = 1:365))
+mod = predict(SSTlm, data.frame(day = 1:365))
 
-lines(1:365,res,col=2)
+lines(1:365,mod,col=2)
+
+mod = as.data.frame(mod)
+
+mod = mod$mod
 
 
-
-
+min(mod)
 
