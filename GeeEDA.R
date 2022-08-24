@@ -2,21 +2,26 @@ library(RGEEtools)
 
 start()
 
+tabla = ROI("[121.61231859512498, 12.067362107514418],
+          [121.61231859512498, 11.77713025527187],
+          [121.84577806778123, 11.77713025527187],
+          [121.84577806778123, 12.067362107514418]")
 
 
-ROI = ROI()
+# ------------------the chunk below should be ran in the first instance ---------------------
 
-temp = wttolist(depth = 0, date = "20100101", interval = 7, ROI = ROI, scale = 100000)
-temp = geetodf(temp)
-temp$water_temp_0 = (temp$water_temp_0*0.001)+20
+temp = wstolist(depth = 10, date = "2010-01-01", interval = 1, ROI = tabla , scale = 10000)
+temp = mean((geetodf(temp)$xx))
+temp = data.frame(date = "2010-01-01", temp = temp)
+red = temp
+red = red[,1:2]
 
-
-
-geometry = ee$Geometry$Point(c(120.91157001734109, 8.723755466136668))
-
-
-data = rgee::ee$ImageCollection('HYCOM/sea_temp_salinity')$
-  filterDate(i_date, f_date)$select("water_temp_0")$mean()$
-  sample(region = geometry, scale = 100 , geometries = TRUE, seed = 10)$getInfo()
-
-
+while (TRUE) {
+  
+  
+  list = date + runif(1, 1, 3574)
+  temp = wstolist(depth = 10, date = list, interval = 1, ROI = tabla, scale = 10000)
+  temp = mean((geetodf(temp)$salinity_10))
+  red[(nrow(red)+1),] = c(as.character(list), temp)
+  print(nrow(red))
+}

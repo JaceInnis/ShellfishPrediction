@@ -61,6 +61,7 @@ for (i in 1:(as.integer(nrow(dfram)/7)-1)) {
   
 }
 
+
 weekdata$date = ymd(weekdata$date)
 
 weekdata$week = week(weekdata$date)
@@ -88,8 +89,14 @@ weekdata$temp2 = NA
 weekdata$temp3 = NA
 weekdata$temp4 = NA
 weekdata$temp5 = NA
+weekdata$temp6 = NA
+weekdata$temp7 = NA
+weekdata$temp8 = NA
+
 
 for (i in 1:nrow(weekdata)) {
+  
+  weekdata$date[i]
   
   
   if(weekdata$date[i] > ymd("20130327") & weekdata$date[i] < ymd("20130403")){
@@ -103,22 +110,25 @@ for (i in 1:nrow(weekdata)) {
   temp = mod[yday(weekdata$date[i])] - temp
   
   
-  
-  
+
   weekdata$temp0[i] = temp
   weekdata$temp1[i+1] = temp
   weekdata$temp2[i+2] = temp
   weekdata$temp3[i+3] = temp
   weekdata$temp4[i+4] = temp
   weekdata$temp5[i+5] = temp
+  weekdata$temp6[i+6] = temp
+  weekdata$temp7[i+7] = temp
+  weekdata$temp8[i+8] = temp
   
+    
   print(weekdata$date[i])
 }
 
 tail(weekdata)
 
 weekdata = weekdata[!is.na(weekdata$temp0),]
-weekdata = weekdata[!is.na(weekdata$temp5),]
+weekdata = weekdata[!is.na(weekdata$temp8),]
 
 # -------------------------- GML -------------------------
 
@@ -138,25 +148,35 @@ weekdata$siteq = (weekdata$site/14)
 
 weekdata$week = as.factor(weekdata$week)
 
+weekdata$month = as.factor(month(weekdata$date))
+
+month
 
 
+#--- week ---
 
 
-
-
-fit = glm( siteq ~ year + week + temp0, data=weekdata , family = "quasibinomial")
+fit = glm( siteq ~ year + week , data=weekdata , family = "quasibinomial")
 res = predict.glm(fit, weekdata)
 plot( exp(res) ~ weekdata$date, type="l" , col = "red")
 lines( weekdata$siteq ~ weekdata$date, type="l"  , col = "blue")
 
 
+summary(fit)
 
 
+#--- month ---
 
+fit = glm( siteq ~ year + month + temp5 , data=weekdata , family = "quasibinomial")
+res = predict.glm(fit, weekdata)
+plot( exp(res) ~ weekdata$date, type="l" , col = "red")
+lines( weekdata$siteq ~ weekdata$date, type="l"  , col = "blue")
 
+summary(fit)
 
+fit$
 
-
+glm
 
 
 # ------------------------------------------ EDA on Coefficents -------------------------------------------

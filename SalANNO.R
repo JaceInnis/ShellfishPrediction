@@ -1,7 +1,3 @@
-surigaostrait = ROI("[124.83301362364946, 9.855460853817496],
-          [124.83301362364946, 9.563079212595822],
-          [125.37134370177446, 9.563079212595822],
-          [125.37134370177446, 9.855460853817496]")
 
 date = ymd(20120106)
 
@@ -10,11 +6,11 @@ list = date + runif(600, 1, 3574)
 
 # ------------------the chunk below should be ran in the first instance ---------------------
 
-temp = wstolist(depth = 10, date = "20100101", interval = 7, ROI = surigaostrait, scale = 10000)
-temp = mean((geetodf(temp)$salinity_10*0.001)+20)
-temp = data.frame(date = "2010-01-01", temp = temp)
-red = temp
-red = red[,1:2]
+# temp = wstolist(depth = 10, date = "20100101", interval = 7, ROI = surigaostrait, scale = 10000)
+# temp = mean((geetodf(temp)$salinity_10*0.001)+20)
+# temp = data.frame(date = "2010-01-01", temp = temp)
+# red = temp
+# red = red[,1:2]
 
 while (TRUE) {
   list = date + runif(1, 1, 3574)
