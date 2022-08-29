@@ -54,13 +54,14 @@ Visayan = ROI("[123.47118702941958, 11.774879402681744],
 lines = read.csv("modeledAnno.csv")
 
 
-MasterLoc = list(c( Visayan, 0, 8000, NA,"Visayan"  , c("temp", lines$visayantemp) , c("Sal", lines$visayansal), c("Velu", lines$visayanvelu), c("Velv", lines$visayanvelv)),
-                 c( southsibuyan, 1, 7200, 1000, "southsibuyan", c("temp", lines$southsibuyantemp) , c("Sal", lines$southsibuyansal), c("Velu", lines$southsibuyanvelu), c("Velv", lines$southsibuyanvelv)),
-                 c( sibuyan, 1, 13000, 1000, "sibuyan", c("temp", lines$sibuyantemp) , c("Sal", lines$sibuyansal), c("Velu", lines$sibuyanvelu), c("Velv", lines$sibuyanvelv)),
-                 c( tablas, 1, 10000, 400, "tablas", c("temp", lines$tablastemp) , c("Sal", lines$tablassal), c("Velu", lines$tablasvelu), c("Velv", lines$tablasvelv)),
-                 c( surigao, 1, 10000, 1000, "surigao", c("temp", lines$surigaotemp) , c("Sal", lines$surigaosal), c("Velu", lines$surigaovelu), c("Velv", lines$surigaovelv)),
-                 c( Mindoro, 1, 13000, 700, "Mindoro", c("temp", lines$mindorotemp) , c("Sal", lines$mindorosal), c("Velu", lines$mindorovelu), c("Velv", lines$mindorovelv)))
+
+MasterLoc = list(Visayan = list( Visayan, 0, 8000, NA,"Visayan"  , var =  list(temp = lines$visayantemp, Sal = lines$visayansal, Velu =  lines$visayanvelu, Velv = lines$visayanvelv)),
+                 southsibuyan = list( southsibuyan, 1, 7200, 1000, "southsibuyan",  var = list(temp = lines$southsibuyantemp, Sal = lines$southsibuyansal, Velu =  lines$southsibuyanvelu, Velv = lines$southsibuyanvelv)),
+                 sibuyan = list( sibuyan, 1, 13000, 1000, "sibuyan",  var = list(temp = lines$sibuyantemp, Sal = lines$sibuyansal, Velu =  lines$sibuyanvelu, Velv = lines$sibuyanvelv)),
+                 tablas = list( tablas, 1, 10000, 400, "tablas",  var = list(temp = lines$tablastemp, Sal = lines$tablassal, Velu =  lines$tablasvelu, Velv = lines$tablasvelv)),
+                 surigao = list( surigao, 1, 10000, 1000, "surigao",  var = list(temp = lines$surigaotemp, Sal = lines$surigaosal, Velu =  lines$surigaovelu, Velv = lines$surigaovelv)),
+                 Mindoro = list( Mindoro, 1, 13000, 700, "Mindoro",  var = list(temp = lines$mindorotemp, Sal = lines$mindorosal, Velu =  lines$mindorovelu, Velv = lines$mindorovelv)))
 
 
-MasterLoc[[1]]
+
 
