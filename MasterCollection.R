@@ -4,7 +4,9 @@ weekdata
 
 MasterLoc
 
-
+# this script makes a large list to host the data that corresponds to the master weekdata dataframe. after making the list 
+# there is a data collection function 'rob' and then the loop to collect the data. 
+# Below that I have a new list that extends the data to include the raw data and to include atmo data
 
 
 masterdata = list(
@@ -94,4 +96,81 @@ for (q in 2:6) {
 
 
 save(masterdata, file = "masterdata.Rdata")
+
+# ------------------------------- atmo data collection -------------------------------
+atmodata = data.frame(cloraw = rep(NA, 533), cloanno = rep(NA, 533), rainraw = rep(NA, 533), rainanno = rep(NA, 533))
+
+
+
+for (i in 1:533) {
+  list = weekdata$date[i]
+  list = lubridate::ymd(list)
+  i_date = as.character(list-7)
+  f_date = as.character((list))
+  
+  data = ee$ImageCollection('NOAA/NCEP_DOE_RE2/total_cloud_coverage')$
+    filterDate( i_date , f_date )$select("tcdc")$mean()$
+    sample(region = atmos, scale = 160000 , geometries = TRUE, seed = 10)$getInfo()
+  
+  atmodata$cloraw[i] = mean(geetodf(data)$tcdc)
+  atmodata$cloanno[i] = mean(geetodf(data)$tcdc) -  MasterLoc$atmos$var$cloud[yday(list)]     # anno minus
+  
+  
+  data = ee$ImageCollection('NASA/GPM_L3/IMERG_V06')$
+    filterDate( i_date , f_date )$select("precipitationCal")$mean()$
+    sample(region = atmos, scale = 160000 , geometries = TRUE, seed = 10)$getInfo()
+  
+  
+  atmodata$rainraw[i] = mean(geetodf(data)$precipitationCal)
+  atmodata$rainanno[i] = mean(geetodf(data)$precipitationCal) -  MasterLoc$atmos$var$rain[yday(list)]     # anno minus
+  
+  
+  print(i)
+}
+
+# ------------------------------- retrieve non anomolys data ----------------------------
+
+
+
+
+realmastdat = list(
+  Visayan = list(top = list(temp = list(anno = rep(NA, 533), raw = rep(NA, 533)), sal = list(anno = rep(NA, 533), raw = rep(NA, 533)), velu = list(anno = rep(NA, 533), raw = rep(NA, 533)), velv = list(anno = rep(NA, 533), raw = rep(NA, 533)))),
+  southsibuyan = list(top = list(temp = list(anno = rep(NA, 533), raw = rep(NA, 533)), sal = list(anno = rep(NA, 533), raw = rep(NA, 533)), velu = list(anno = rep(NA, 533), raw = rep(NA, 533)), velv = list(anno = rep(NA, 533), raw = rep(NA, 533))),
+                      bot = list(temp = rep(NA, 533), sal = rep(NA, 533), velu = rep(NA, 533), velv = rep(NA, 533))),
+  sibuyan = list(top = list(temp = list(anno = rep(NA, 533), raw = rep(NA, 533)), sal = list(anno = rep(NA, 533), raw = rep(NA, 533)), velu = list(anno = rep(NA, 533), raw = rep(NA, 533)), velv = list(anno = rep(NA, 533), raw = rep(NA, 533))),
+                 bot = list(temp = rep(NA, 533), sal = rep(NA, 533), velu = rep(NA, 533), velv = rep(NA, 533))),
+  tablas  = list(top = list(temp = list(anno = rep(NA, 533), raw = rep(NA, 533)), sal = list(anno = rep(NA, 533), raw = rep(NA, 533)), velu = list(anno = rep(NA, 533), raw = rep(NA, 533)), velv = list(anno = rep(NA, 533), raw = rep(NA, 533))),
+                 bot = list(temp = rep(NA, 533), sal = rep(NA, 533), velu = rep(NA, 533), velv = rep(NA, 533))),
+  surigao  = list(top = list(temp = list(anno = rep(NA, 533), raw = rep(NA, 533)), sal = list(anno = rep(NA, 533), raw = rep(NA, 533)), velu = list(anno = rep(NA, 533), raw = rep(NA, 533)), velv = list(anno = rep(NA, 533), raw = rep(NA, 533))),
+                  bot = list(temp = rep(NA, 533), sal = rep(NA, 533), velu = rep(NA, 533), velv = rep(NA, 533))),
+  mindoro  = list(top = list(temp = list(anno = rep(NA, 533), raw = rep(NA, 533)), sal = list(anno = rep(NA, 533), raw = rep(NA, 533)), velu = list(anno = rep(NA, 533), raw = rep(NA, 533)), velv = list(anno = rep(NA, 533), raw = rep(NA, 533))),
+                  bot = list(temp = rep(NA, 533), sal = rep(NA, 533), velu = rep(NA, 533), velv = rep(NA, 533)))
+)
+
+
+
+
+for (i in 1:6) {
+    for (w in 1:4) {
+      realmastdat[[i]][[1]][[w]][[1]] = masterdata[[i]][[1]][[w]]
+      realmastdat[[i]][[1]][[w]][[2]] = masterdata[[i]][[1]][[w]]   +   MasterLoc[[i]]$var[[w]][weekdata$day]
+  }
+}
+
+
+for (i in 2:6) {
+  for (w in 1:4) {
+    realmastdat[[i]][[2]][[w]] = masterdata[[i]][[2]][[w]]
+  }
+}
+
+
+realmastdat$atmo = list(clo = list(raw = atmodata$cloraw, anno = atmodata$cloanno),
+                        rain = list(raw = atmodata$rainraw, anno = atmodata$rainanno))
+
+realmastdat$atmo$clo$raw
+
+
+save(realmastdat, file = "realmasterdata.Rdata")
+
 

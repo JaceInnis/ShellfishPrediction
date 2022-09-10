@@ -45,6 +45,15 @@ Visayan = ROI("[123.47118702941958, 11.774879402681744],
           [123.83922902160708, 11.473571776283169],
           [123.83922902160708, 11.774879402681744]")
 
+
+
+atmos = ROI("[119.77710790531881, 14.217910009780205],
+      [119.77710790531881, 8.75084008586638],
+      [126.63257665531881, 8.75084008586638],
+      [126.63257665531881, 14.217910009780205]")
+
+
+
 # mindoro srait
 # SurigaoStrait
 # Panay Strait
@@ -60,7 +69,10 @@ MasterLoc = list(Visayan = list( Visayan, 0, 8000, NA,"Visayan"  , var =  list(t
                  sibuyan = list( sibuyan, 1, 13000, 1000, "sibuyan",  var = list(temp = lines$sibuyantemp, Sal = lines$sibuyansal, Velu =  lines$sibuyanvelu, Velv = lines$sibuyanvelv)),
                  tablas = list( tablas, 1, 10000, 400, "tablas",  var = list(temp = lines$tablastemp, Sal = lines$tablassal, Velu =  lines$tablasvelu, Velv = lines$tablasvelv)),
                  surigao = list( surigao, 1, 10000, 1000, "surigao",  var = list(temp = lines$surigaotemp, Sal = lines$surigaosal, Velu =  lines$surigaovelu, Velv = lines$surigaovelv)),
-                 Mindoro = list( Mindoro, 1, 13000, 700, "Mindoro",  var = list(temp = lines$mindorotemp, Sal = lines$mindorosal, Velu =  lines$mindorovelu, Velv = lines$mindorovelv)))
+                 Mindoro = list( Mindoro, 1, 13000, 700, "Mindoro",  var = list(temp = lines$mindorotemp, Sal = lines$mindorosal, Velu =  lines$mindorovelu, Velv = lines$mindorovelv)),
+                 atmos = list( atmos, 1, 160000, NA, "atmos",  var = list(cloud = lines$cloud, rain = lines$rain))
+                 )
+
 
 
 

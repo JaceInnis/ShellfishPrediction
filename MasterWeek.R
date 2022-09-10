@@ -67,3 +67,19 @@ weekdata$date = ymd(weekdata$date)
 weekdata$week = week(weekdata$date)
 weekdata$year = year(weekdata$date)
 weekdata
+
+
+
+# ------------------------------------- data dataframe -----------------------------
+
+ 
+
+
+
+
+write.csv(weekdata, "weekdata.csv")
+
+
+
+
+
