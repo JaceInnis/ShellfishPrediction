@@ -1,5 +1,5 @@
 
-weekdata
+weekdata = read.csv("weekdata.csv")
 
 
 MasterLoc
@@ -54,11 +54,16 @@ rob = function(x){
   }
 }
 
+yday(weekdata$date[468])
 
-#63
-#468
-for (i in 468) {
-  list = weekdata$date[i]
+
+ymd(weekdata$date[468]) - 1
+
+
+
+ 
+ for (i in 468) {
+  list = ymd(weekdata$date[i]) - 1
   print(list)
   for (z in 1:6) {
     print(MasterLoc[[z]][[5]])
@@ -152,25 +157,101 @@ realmastdat = list(
 
 for (i in 1:6) {
     for (w in 1:4) {
-      realmastdat[[i]][[1]][[w]][[1]] = masterdata[[i]][[1]][[w]]
-      realmastdat[[i]][[1]][[w]][[2]] = masterdata[[i]][[1]][[w]]   +   MasterLoc[[i]]$var[[w]][weekdata$day]
+      realmastdat[[i]][[1]][[w]][[1]][468] = masterdata[[i]][[1]][[w]][468]
+      realmastdat[[i]][[1]][[w]][[2]][468] = masterdata[[i]][[1]][[w]][468]   +   MasterLoc[[i]]$var[[w]][365]
   }
 }
 
 
 for (i in 2:6) {
   for (w in 1:4) {
-    realmastdat[[i]][[2]][[w]] = masterdata[[i]][[2]][[w]]
+    realmastdat[[i]][[2]][[w]][468] = masterdata[[2]][[2]][[1]][468]
   }
 }
 
 
-realmastdat$atmo = list(clo = list(raw = atmodata$cloraw, anno = atmodata$cloanno),
-                        rain = list(raw = atmodata$rainraw, anno = atmodata$rainanno))
 
-realmastdat$atmo$clo$raw
+
+
+
+
+
+for (t in 1:533) {
+  for (i in 1:6) {
+    for (w in 1:4) {
+      for (r in 1:2) {
+        if(  is.na(realmastdat[[i]][[1]][[w]][[r]][t]) ){
+          if(r == 1){
+            realmastdat[[i]][[1]][[w]][[r]][t] = 0
+          }
+          else{
+            realmastdat[[i]][[1]][[w]][[r]][t] = MasterLoc[[i]]$var[[w]][yday(weekdata$date[t])]
+            }
+          }
+        }
+      }
+    }
+  for (i in 2:6) {
+    for (w in 1:4) {
+      realmastdat[[i]][[2]][[w]][t] = mean(realmastdat[[i]][[2]][[w]], na.rm = TRUE)
+    }
+  }
+}
+
+
+
+
+
+
+ 
+  for (i in 1:6) {
+    for (w in 1:4) {
+      for (r in 1:2) {
+        plot(realmastdat[[i]][[1]][[w]][[r]], main = locats[i], ylab = varnames[w], xlab = rawano[r])
+      }
+    }
+  }
+  
+  
+  for (i in 2:6) {
+    for (w in 1:4) {
+      plot(realmastdat[[i]][[2]][[w]], main = locats[i], ylab = varnames[w], xlab = rawano[r])
+    }
+  }
+ 
+
+
+
+
+plot(
+realmastdat$southsibuyan$bot$velu)
 
 
 save(realmastdat, file = "realmasterdata.Rdata")
 
+
+realmastdat
+
+
+
+
+
+
+
+
+for (t in 1:533) {
+  for (i in 1:6) {
+    for (w in 1:4) {
+      realmastdat[[i]][[1]][[w]][[1]][468] = masterdata[[i]][[1]][[w]][468]
+      realmastdat[[i]][[1]][[w]][[2]][468] = masterdata[[i]][[1]][[w]][468]   +   MasterLoc[[i]]$var[[w]][365]
+    }
+  }
+  
+  
+  for (i in 2:6) {
+    for (w in 1:4) {
+      realmastdat[[i]][[2]][[w]][468] = masterdata[[2]][[2]][[1]][468]
+    }
+  }
+}
 

@@ -1,0 +1,22 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+this document will outline a work flow for collecting environmental data for prediction. 
+
+
+```{r}
+plot(cars)
+```
+
+
+
+
+
+
+
+

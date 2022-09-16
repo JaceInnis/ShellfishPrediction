@@ -1,0 +1,22 @@
+---
+title: "DavosSixWeekPrediction"
+author: "Jace"
+date: '2022-09-16'
+output: html_document
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

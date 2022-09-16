@@ -1,7 +1,7 @@
 
 
-atmodata = data.frame(cloraw = rep(NA, 533), cloanno = rep(NA, 533), rainraw = rep(NA, 533), rainanno = rep(NA, 533))
 
+atmodata = data.frame(cloraw = rep(NA, 533), cloanno = rep(NA, 533), rainraw = rep(NA, 533), rainanno = rep(NA, 533))
 
 
 for (i in 1:533) {

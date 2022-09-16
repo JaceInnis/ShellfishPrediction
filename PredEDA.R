@@ -3,7 +3,8 @@ load("masterdata.Rdata")
 
 load("realmasterdata.Rdata")
 
-
+library(tidyverse)
+library(lubridate)
 # ---------------------- NA all the outliers ---------------------
 
 weekdata$day = yday(weekdata$date)
