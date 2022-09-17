@@ -1,20 +1,14 @@
 library(keras)
 library(lubridate)
 data = read.csv("davosMasterdata.csv")
-data = data[,c(-1,-2)]
+data = data[,c(-1, -2 , -3 )]
 
 
-plot(data$toxbi ~ yday(mdy(data$date)))
-plot(data$toxbi)
-rep = colnames(data)
- 
- for (i in 1:length(data)) {
-   plot(data[,i], main = rep[i], xlab = i, type = "l")
- }
+# rep = colnames(data)
+# for (i in 1:length(data)) {
+#    plot(data[,i], main = rep[i], xlab = i, type = "l")
+#  }
 
-#results = data.frame(res.inclu = NA, vmin = NA, vmax = NA, minin = NA, maxin = NA, lookback = NA,
-#                     delay = NA, batch_size = NA,dropout = NA, unitsl1 = NA, unitsl2 = NA, loss = NA, 
-#                     accuracy =  NA, val_loss = NA, val_accuracy = NA) 
  
 # -------------------------------------------------------------------
 
@@ -24,151 +18,208 @@ mean <- apply(train_data, 2, mean)
 std <- apply(train_data, 2, sd)
 data[,-1] <- scale(data[,-1], center = mean, scale = std)
 
+data$num = 1:nrow(data)
+tlist = data$num[data[,1] == 1][1:36]
+data = data[,-16]
+
 data = data.matrix(data)
-
-
-generator <- function(data, lookback, delay, min_index, max_index,
-                      shuffle = FALSE, batch_size = 128, step = 6) {
-  if (is.null(max_index)) max_index <- nrow(data) - delay - 1
-  i <- min_index + lookback
-  function() {
-    if (shuffle) {
-      rows <- sample(c((min_index+lookback):max_index), size = batch_size)
-    } else {
-      if (i + batch_size >= max_index)
-        i <<- min_index + lookback
-      rows <- c(i:min(i+batch_size, max_index))
-      i <<- i + length(rows)
-    }
-    samples <- array(0, dim = c(length(rows),
-                                lookback / step,
-                                ( -1 +     dim(data)[[-1]])))
-    targets <- array(0, dim = c(length(rows)))
-    for (j in 1:length(rows)) {
-      indices <- seq(rows[[j]] - lookback, rows[[j]],
-                     length.out = dim(samples)[[2]])
-      samples[j,,] <- data[indices,    -1    ]
-      targets[[j]] <- data[rows[[j]] + delay,1]
-    }
-    list(samples, targets)
-  }
-}
+datahold = data
+velv = c(-15, -11, -7)
+velu = velv+1
+sal = velv+2
+temp = velv+3
 
 
 # -------------------------------------------------------------------
 # -------------------------------------------------------------------
 # -------------------------------------------------------------------
 
-#571
+data = datahold[,c(-13, -5, -6, -7)]
+
+data = datahold
 
 
-plot(data[380:571,1])
+# -------------------------------------------------------------------
 
-
-
-vmin = 400
+vmin = 380
 vmax = 560
-minin = 1
-maxin = vmin-1
 lookback <- 24
-step <- 1
-delay <- 5
-batch_size <- 24
+delay <- 0
+copn = 0
 
-for (i in 1) {
-train_gen <- generator(
-  data,
-  lookback = lookback,
-  delay = delay,
-  min_index = minin,
-  max_index = maxin,
-  shuffle = TRUE,
-  step = step,
-  batch_size = batch_size
-)
+leng =  (sum(data[(1):(maxin),1])*copn)
 
-val_gen = generator(
-  data,
-  lookback = lookback,
-  delay = delay,
-  min_index = vmin,
-  max_index = vmax,
-  shuffle = TRUE,
-  step = step,
-  batch_size = batch_size
-)
-
-val_steps <- (vmax - vmin - lookback) / batch_size
+# ----------------------------------------------------------------------------------------------------------------------------------
+for (u in 1) {
+  
+  minin = lookback + 1
+  maxin = vmin-1
+  
+  
+  samp =  array(NA, dim = c(maxin - minin+ leng, lookback, -1 + dim(data)[-1]))
+  lab = rep(NA, (maxin - minin+ leng))
+  
+  for (i in 1:(maxin - minin)) {
+    for (w in 1:lookback) {
+      samp[i,w,] = data[(i-1)+minin-(w-1), -1 ]
+    }
+  }
+  
+  for(q in 1:(maxin - minin)){
+    lab[q] = data[(q-1)+minin+delay,1]
+  }
+  
+  
+  if(leng> 1){
+    o = 1
+    for (i in (maxin - minin + 1): (maxin - minin+ leng)) {
+      for (w in 1:lookback) {
+        samp[i,w,] = data[(tlist[o])-(w-1), -1 ]
+      }
+      o = o + 1
+      if(o == 36){o = 1}
+    }
+    
+    for (i in (maxin - minin + 1): (maxin - minin+ leng)) {
+      lab[i] = 1
+    }
+    
+  }
+  
+  
+  val =  array(NA, dim = c(vmax-vmin, lookback, -1 + dim(data)[-1]))
+  vlab = rep(NA, vmax-vmin)
+  
+  for (i in 1:(vmax-vmin)) {
+    for (w in 1:lookback) {
+      val[i,w,] = data[ (i-1) + vmin - (w-1) + delay, -1 ]
+    }
+  }
+  
+  for(q in 1:(vmax-vmin)){
+    vlab[q] = data[(q-1)+vmin+delay,1]
+  }
+  
 }
 
+
+
+for (u in 1) {
+  
+  minin = lookback + 1
+  maxin = vmin-1
+  
+  
+  samp =  array(NA, dim = c(maxin - minin+ leng, lookback, -1 + dim(data)[-1]))
+  lab = rep(NA, (maxin - minin+ leng))
+  
+  for (i in 1:(maxin - minin)) {
+    for (w in lookback:1) {
+      samp[i,w,] = data[(i-1)+minin-(w-1), -1 ]
+    }
+  }
+  
+  for(q in 1:(maxin - minin)){
+    lab[q] = data[(q-1)+minin+delay,1]
+  }
+  
+  
+  if(leng> 1){
+    o = 1
+    for (i in (maxin - minin + 1): (maxin - minin+ leng)) {
+      for (w in lookback:1) {
+        samp[i,w,] = data[(tlist[o])-(w-1), -1 ]
+      }
+      o = o + 1
+      if(o == 36){o = 1}
+    }
+    
+    for (i in (maxin - minin + 1): (maxin - minin+ leng)) {
+      lab[i] = 1
+    }
+    
+  }
+  
+  
+  val =  array(NA, dim = c(vmax-vmin, lookback, -1 + dim(data)[-1]))
+  vlab = rep(NA, vmax-vmin)
+  
+  for (i in 1:(vmax-vmin)) {
+    for (w in lookback:1) {
+      val[i,w,] = data[ (i-1) + vmin - (w-1) + delay, -1 ]
+    }
+  }
+  
+  for(q in 1:(vmax-vmin)){
+    vlab[q] = data[(q-1)+vmin+delay,1]
+  }
+  
+} # reverse
+
+
+vlab
 # -------------------------------------------------------------------
 
-
-dropout = 0.6
-unitsl1 = 2
+dropout = 0.2
+unitsl1 = 4
 unitsl2 = 1
 
 
 model <- keras_model_sequential() %>%
-  layer_gru(units = unitsl1, 
+  layer_lstm(units = 4, 
             dropout = dropout, 
             recurrent_dropout = dropout,
-            input_shape = list(NULL, (-1   + dim(data)[[-1]]))
+            input_shape = list(NULL, (dim(samp)[[3]]))
             ) %>%
   layer_dense(units = 1 , activation = "sigmoid")
 model %>% compile(
   optimizer = "rmsprop",
-  loss = "binary_crossentropy",
-  metrics = c("accuracy")
+  loss = "Poisson",
+  metrics = c(metric_true_positives())
 )
 
 
+
+
+for (i in 1:200) {
 
 history <- model %>% fit(
-  train_gen, 
-  steps_per_epoch = 100,
-  epochs = 40,
-  validation_data = val_gen,
-  validation_steps = val_steps
-)
+  samp,
+  lab,
+  epochs = 1,
+  validation_data = list(val, vlab),
+  shuffle = TRUE )
+
+print(i)
+
+res = model %>% predict(samp)
+vres = model %>% predict(val)
+
+plot(c(lab,vlab), col = "red")
+points(c(res,vres)) 
 
 
-results = rbind(results, data.frame(res.inclu = "NO", vmin = vmin, vmax = vmax, minin = minin, maxin = maxin, 
-                          lookback = lookback, delay = delay, batch_size = batch_size, dropout = dropout, 
-                          units = unitsl1, loss = tail(history[[2]][[1]],1), accuracy = tail(history[[2]][[2]],1),
-                          val_loss = tail(history[[2]][[3]],1), val_accuracy = tail(history[[2]][[4]],1),
-                          epochs = history[[1]][[2]], steps = history[[1]][[3]], other = "rmsprop,binary_crossentropy") )
-
-
-
-
-
-test = array(NA, dim = c(vmax-vmin, lookback, (-1 + dim(data)[[-1]])))
-
-
-for (i in 1:(vmax-vmin)) {
-  for (w in 1:lookback) {
-    test[i,w,] = data[(i-1)+vmin-(w-1-delay), -1 ]
-  }
 }
 
 
-
-res = model %>% predict(test)
-
-plot(data[vmin:vmax,1])
-points(res) 
+  plot(vlab, col = 'red')
+points(vres)
 
 
+  results = rbind(results, data.frame(res.inclu = "NO", vmin = vmin, vmax = vmax, minin = minin, maxin = maxin, 
+                                    lookback = lookback, delay = delay, batch_size = batch_size, dropout = dropout, 
+                                    units = unitsl1, loss = tail(history[[2]][[1]],1), accuracy = tail(history[[2]][[2]],1),
+                                    val_loss = tail(history[[2]][[3]],1), val_accuracy = tail(history[[2]][[4]],1),
+                                    epochs = history[[1]][[2]], steps = history[[1]][[3]], other = "Only the second event is predicted") )
+
+
+1-mean(data[vmin:vmax,1])
 
 
 
-
-
-
-#results = data.frame(res.inclu = NA, vmin = NA, vmax = NA, minin = NA, maxin = NA, lookback = NA,
-#                     delay = NA, batch_size = NA,dropout = NA, units = NA, loss = NA, 
-#                     accuracy =  NA, val_loss = NA, val_accuracy = NA, epochs = NA, steps = NA, other = NA) 
+# results = data.frame(res.inclu = NA, vmin = NA, vmax = NA, minin = NA, maxin = NA, lookback = NA,
+#                     delay = NA, batch_size = NA,dropout = NA, units = NA, loss = NA,
+#                     accuracy =  NA, val_loss = NA, val_accuracy = NA, epochs = NA, steps = NA, other = NA)
 
 
 
@@ -182,6 +233,71 @@ for (i in vmin:vmax) {
 }
 
 1- mean(res, na.rm = TRUE)
+
+
+
+
+
+
+for (i in 1:(vmax-vmin)) {
+  for (w in 1:lookback) {
+    test[i,w,] = data[(i-1)+vmin-(w-1), -1 ]
+  }
+}
+
+
+
+mean()
+
+
+res = val_gen()
+
+res[[1]][2,,1]
+
+
+data[380:399,2]
+
+
+test[1,,1]
+
+
+for (i in 1) {
+  train_gen <- generator(
+    data,
+    lookback = lookback,
+    delay = delay,
+    min_index = minin,
+    max_index = maxin,
+    shuffle = TRUE,
+    step = step,
+    batch_size = batch_size
+  )
+  
+  val_gen = generator(
+    data,
+    lookback = lookback,
+    delay = delay,
+    min_index = vmin,
+    max_index = vmax,
+    shuffle = FALSE,
+    step = step,
+    batch_size = batch_size
+  )
+  
+  val_steps <- (vmax - vmin - lookback) / batch_size
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

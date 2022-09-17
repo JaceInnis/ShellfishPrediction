@@ -5,15 +5,103 @@ date: '2022-09-16'
 output: html_document
 ---
 
+```{r}
+library(lubridate)
+```
+
+
+#### PREPARING THE RESPONCE VARIABLE
+
+the rpesponce variable was recorded from a decade of philipino buro of fisheries and aquatic recorces that indicates either that a site is safe to harvest and eat shellfish, or if a site has shellfish with a dangerouse level of toxin. [example]
+
+This data was summarized into mean 7 a day long experimental unit of the Balite Bay, Mati City in Davao Oriental site in specific. This site is on the wester side of the Mindanao island. 
+
+A time series of the binary responce variable for the site of interest is printed below
+
+```{r}
+Weekdata = read.csv("Davos.csv")
+Weekdata$date = mdy(Weekdata$date)
+
+plot(site~date, data = Weekdata, main = "Balite Bay Toxisity", xlab = NA, ylab = "0: non Toxic - 1: Toxic")
+
+```
+
+For the sake of an early warning sytem, the resonce variable that will be moddeled are the three weeks that lead to a toxic event and the first three weeks of the toxic event. This responce varible moddles 8 toxic events 
+
+```{r}
+data = read.csv("davosMasterdata.csv")
+
+data$date = mdy(data$date)
+
+#number of txoic events
+
+print(sum(data$toxpre)/6)
+
+#number of weeks that are classified as toxic events 
+
+print(sum(data$toxpre[data$toxpre==1]))
+
+#number of weeks that are classified as toxic events 
+
+print(sum(data$toxpre[data$toxpre==0]))
+
+```
+
+
+For the training of the model, The first 379 weeks were used while the last 80 were used for validation (I.E. not apart of the traing set.)
+
+This is therefore the time series that we would like to predict. 
+
+
+```{r}
+
+plot(toxpre~date, data = data[380:560,], main = "Balite Bay Toxisity", xlab = NA, ylab = "0: non Toxic - 1: Toxic")
+
+```
+
+
+
+
+#### COLLECTING CO-VARIETS
+
+
+The predicting variables that were collected are:
+
+Water temp
+Salinity 
+Water velocity (e-w & n-s)
 
 
 
 
 
 
+#### TRAINING NURAL NET
+
+
+Model parameters : 
+
+```{r}
+
+data.frame(res.inclu = "NO", vmin = vmin, vmax = vmax, minin = minin, maxin = maxin, 
+                          lookback = lookback, delay = delay, batch_size = batch_size, dropout = dropout, 
+                          units = unitsl1, loss = tail(history[[2]][[1]],1), accuracy = tail(history[[2]][[2]],1),
+                          val_loss = tail(history[[2]][[3]],1), val_accuracy = tail(history[[2]][[4]],1),
+                          epochs = history[[1]][[2]], steps = history[[1]][[3]], other = "optimizer = rmsprop, loss = binary_crossentropy, metrics = c(metric_true_positives())")
+
+```
 
 
 
+Model training history
+
+
+```{r}
+plot(history)
+```
+
+
+Prediction on validation set
 
 
 
