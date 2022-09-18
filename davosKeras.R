@@ -43,9 +43,10 @@ data = datahold
 
 vmin = 380
 vmax = 560
-lookback <- 24
+lookback <- 20
 delay <- 0
 copn = 0
+maxin = vmin-1
 
 leng =  (sum(data[(1):(maxin),1])*copn)
 
@@ -53,8 +54,6 @@ leng =  (sum(data[(1):(maxin),1])*copn)
 for (u in 1) {
   
   minin = lookback + 1
-  maxin = vmin-1
-  
   
   samp =  array(NA, dim = c(maxin - minin+ leng, lookback, -1 + dim(data)[-1]))
   lab = rep(NA, (maxin - minin+ leng))
@@ -157,7 +156,7 @@ for (u in 1) {
 } # reverse
 
 
-vlab
+
 # -------------------------------------------------------------------
 
 dropout = 0.2
@@ -195,11 +194,16 @@ print(i)
 res = model %>% predict(samp)
 vres = model %>% predict(val)
 
-plot(c(lab,vlab), col = "red")
-points(c(res,vres)) 
+plot(lab, col = "red")
+points(res) 
+
+plot(vlab, col = 'red')
+points(vres)
 
 
 }
+
+ par( mfrow= c(2,1) )
 
 
   plot(vlab, col = 'red')
