@@ -43,8 +43,8 @@ data = datahold
 
 vmin = 380
 vmax = 560
-lookback <- 20
-delay <- 0
+lookback <- 24
+delay <- 5
 copn = 0
 maxin = vmin-1
 
@@ -159,7 +159,7 @@ for (u in 1) {
 
 # -------------------------------------------------------------------
 
-dropout = 0.2
+dropout = 0.4
 unitsl1 = 4
 unitsl2 = 1
 
@@ -180,7 +180,7 @@ model %>% compile(
 
 
 
-for (i in 1:200) {
+for (i in 1:300) {
 
 history <- model %>% fit(
   samp,
@@ -194,10 +194,10 @@ print(i)
 res = model %>% predict(samp)
 vres = model %>% predict(val)
 
-plot(lab, col = "red")
+plot(lab, col = "red", xlab = NA)
 points(res) 
 
-plot(vlab, col = 'red')
+plot(vlab, col = 'red', xlab = NA)
 points(vres)
 
 

@@ -2,20 +2,25 @@ library(lubridate)
 
 data = read.csv("final.csv")
 
+data = read.csv("MatarianoBayRaw.csv")
+
+colnames(data) = c("date", "MatarianoBay")
+
 tail(data)
 
 data$date = dmy(data$date)
 
-start = ymd("2012-01-06")
+start = ymd("2011-05-01")
 
-end = ymd("2022-07-31")
+end = ymd("2022-08-31")
 
-ndays = (((year(end)-2012)*365)+yday(end))
+ndays = (((year(end)-year(start))*365)+yday(end) - yday(start))
 
 
-plot(data$Davo)
 
-hist(data$Davo)
+plot(data$MatarianoBay)
+
+hist(data$MatarianoBay)
 
 for (i in 1:ndays) {
   
@@ -31,13 +36,15 @@ for (i in 1:ndays) {
     if(
       x >= data$date[j] & x < data$date[j+1]
     ){
-      w = data$Davo[j]
+      w = data$MatarianoBay[j]
     }
   }
   
   dfram[i,2] = w   
 }
 
+
+tail(dfram)
 
 
 dfram$week = week(dfram$date)
@@ -58,18 +65,19 @@ newdf$new = (dfram$site[1:3739]-dfram$site[2:3740])
 # new = new[!new==max(new)]
 plot(newdf$new)
 
+newdf = dfram
 
 for (i in 1:(as.integer(nrow(newdf)/7)-1)) {
   
   if(i == 1 ){
     weekdata = data.frame(
       date =  as.character(newdf$date[((i+1)*7)]), 
-      site = mean(newdf$new[((i*7)+1):((i+1)*7)]) ,
+      site = mean(newdf$site[((i*7)+1):((i+1)*7)]) ,
       weekn = i
     )
   }
   else{
-    weekdata[i,] = c(as.character(newdf$new[((i+1)*7)]),mean(newdf$new[((i*7)+1):((i+1)*7)]),i)
+    weekdata[i,] = c(as.character(newdf$site[((i+1)*7)]),mean(newdf$site[((i*7)+1):((i+1)*7)]),i)
   }
   
   print(i)
@@ -79,7 +87,7 @@ for (i in 1:(as.integer(nrow(newdf)/7)-1)) {
 
 plot(weekdata$site)
 
-weekdata$site = as.numeric(weekdata$site)*7
+weekdata$site = as.numeric(weekdata$site)
 
 newas = weekdata$site
 
@@ -144,7 +152,7 @@ weekdata
 
 
 
-write.csv(weekdata, "weekdata.csv")
+write.csv(weekdata, "MatarianoBay2.csv")
 
 
 

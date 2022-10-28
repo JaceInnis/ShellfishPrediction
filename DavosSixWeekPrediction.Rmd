@@ -1,110 +1,153 @@
 ---
-title: "DavosSixWeekPrediction"
+title: "Matariano Bay Prediction"
 author: "Jace"
 date: '2022-09-16'
 output: html_document
 ---
 
-```{r}
+```{r include=FALSE}
+library(ggplot2)
 library(lubridate)
-```
-
-
-#### PREPARING THE RESPONCE VARIABLE
-
-the rpesponce variable was recorded from a decade of philipino buro of fisheries and aquatic recorces that indicates either that a site is safe to harvest and eat shellfish, or if a site has shellfish with a dangerouse level of toxin. [example]
-
-This data was summarized into mean 7 a day long experimental unit of the Balite Bay, Mati City in Davao Oriental site in specific. This site is on the wester side of the Mindanao island. 
-
-A time series of the binary responce variable for the site of interest is printed below
-
-```{r}
-Weekdata = read.csv("Davos.csv")
-Weekdata$date = mdy(Weekdata$date)
-
-plot(site~date, data = Weekdata, main = "Balite Bay Toxisity", xlab = NA, ylab = "0: non Toxic - 1: Toxic")
+library(ggpubr)
 
 ```
 
-For the sake of an early warning sytem, the resonce variable that will be moddeled are the three weeks that lead to a toxic event and the first three weeks of the toxic event. This responce varible moddles 8 toxic events 
 
-```{r}
-data = read.csv("davosMasterdata.csv")
+## PREPARING THE RESPONCE VARIABLE/ TOXICITY REPORT
+
+RESPONSE VARIABLE: bureau of fisheries and aquatic resources binary toxicity report
+ 
+The response variable was recorded from a decade of the Philippine bureau of fisheries and aquatic resources that indicates either that a site is safe to harvest and eat shellfish, or if a site has shellfish with a dangerous level of toxin. 
+ 
+Example of one such report is below
+ 
+<center>
+![](RedTide/2021/166552285_1873789509438724_8841346941095176146_n.jpg){ width=40% }  
+</center>
+ 
+These reports are published at an irregular interval about every two weeks. 
+
+This data was summarized into mean 7 day experimental units. 
+ 
+A time series of the binary response variable for the site of interest is printed below. In essence, this is what we were trying to predict
+
+```{r echo=FALSE}
+
+data = read.csv("MatarianoBayMaster.csv")
 
 data$date = mdy(data$date)
 
-#number of txoic events
 
-print(sum(data$toxpre)/6)
+ggplot(data, aes(x = date, y = sitebi)) +
+  geom_point() +
+  theme_pubclean()+
+  labs(y = "Toxic Level ",title = "Reported values of toxicity at Matariano Bay for the last 11 years")
 
-#number of weeks that are classified as toxic events 
-
-print(sum(data$toxpre[data$toxpre==1]))
-
-#number of weeks that are classified as toxic events 
-
-print(sum(data$toxpre[data$toxpre==0]))
 
 ```
 
 
-For the training of the model, The first 379 weeks were used while the last 80 were used for validation (I.E. not apart of the traing set.)
-
-This is therefore the time series that we would like to predict. 
+In this case, 1 represents when a report was released claiming that the shellfish at Matarinao Bay are above the toxic level for consumption and 0 represents when the shellfish tested at Matariano Bay are free of toxins 
 
 
-```{r}
+## COLLECTING CO-VARIETS
 
-plot(toxpre~date, data = data[380:560,], main = "Balite Bay Toxisity", xlab = NA, ylab = "0: non Toxic - 1: Toxic")
+Because the Philippines has very little consistent environmental data that goes back 10 years, and because the model requires no missing data, a global numerical model was used, namely HYCOM. 
+ 
+HYCOM simulates Water temp, salinity, velocity and height. This is offered at various depths and the surface. For the sake of this project, these variables were collected near shore and far shore at the surface and at a depth of 2000 meters. 
+
+Google earth engine (GEE) was used to collect this data. Specifically the R package - RGEE - was used which allows access to the GEE servers through R. 
+
+Spatial data like the one pictured below was collected and the mean was taken
+
+<center>
+![](Screenshot(267).png){ width=60% }  
+</center>
+
+The above picture shows the three zones that data was collected. The black polygons show where the near and far HYCOM data was taken while the blue square shows where atmospheric data was collected. Namely the [NASA GES DISC Goddard Global Precipitation Measurement](https://developers.google.com/earth-engine/datasets/catalog/NASA_GPM_L3_IMERG_V06)
+
+
+
+The data structure of the input variables generally looked like the flowing, a 2D matrix where each colum is a different environmental variable or derived variable, and each row is the weekly mean  going back in time. 
+
+
+```{r echo=FALSE}
+
+data = data[,c(-1,-2, -4)]
+data = data[,c( 3 ,5,10, 11, 14 ,15,16,17,19)]
+
+colnames(data) =  c("rain", "salinity_close", "Velocity_v_far" , "Velocity_u_far", "Velocity_v_deep", "Velocity_u_deep", "doy", "Elevation_close", "Temp_Annomoly_Close")
+
+
+data[25:34, ]
+
 
 ```
 
+These were the variables used in the final model. Each row represents a week back in time. 
 
 
 
-#### COLLECTING CO-VARIETS
+## TRAINING THE NURAL NET
 
 
-The predicting variables that were collected are:
-
-Water temp
-Salinity 
-Water velocity (e-w & n-s)
+A deep learning artificial neural network was used to predict the binary response variable of the toxicity of the site. Many different parameters go into the structure of the model. The number of layers, number of nodes per layer, input data size, prediction variable lag and drop out rate were all chosen after many trial and error test. 
+ 
+The 11 years of data was split into 9 and 2 years for training and validation. The first 9 years were used for training and the last 2 years as a validation set.    
 
 
+Below is an animation of the training of the model. The predicted values and reported values are shown. 
+
+<center>
+![](traininggif.gif){ width=60% }  
+</center>
 
 
+## RESULTS
 
 
-#### TRAINING NURAL NET
+Surprisingly, out of the three models below, the one with the least amount of lag between the prediction interval (two weeks) is the worst. The best preforming model is the one that predicts four weeks into the future. 
+
+The three plots shows the performance of the model on the entire data set with distinctions being made between the training and validation sets. The model has never seen the validation set and therefore should be have a higher weight when evaluating performance. 
+
+<center>
+![](PointWeek2num2.png){ width=75% }
+</center>
 
 
-Model parameters : 
-
-```{r}
-
-data.frame(res.inclu = "NO", vmin = vmin, vmax = vmax, minin = minin, maxin = maxin, 
-                          lookback = lookback, delay = delay, batch_size = batch_size, dropout = dropout, 
-                          units = unitsl1, loss = tail(history[[2]][[1]],1), accuracy = tail(history[[2]][[2]],1),
-                          val_loss = tail(history[[2]][[3]],1), val_accuracy = tail(history[[2]][[4]],1),
-                          epochs = history[[1]][[2]], steps = history[[1]][[3]], other = "optimizer = rmsprop, loss = binary_crossentropy, metrics = c(metric_true_positives())")
-
-```
+<center>
+![](ConfusValWeek2num2.png){ width=39% } ![](ConfusWeek2num2.png){ width=39% }
+</center>
 
 
-
-Model training history
-
-
-```{r}
-plot(history)
-```
-
-
-Prediction on validation set
+## -
 
 
 
+<center>
+![](PointWeek3num2.png){ width=75% }
+</center>
+
+
+<center>
+![](ConfusValWeek3num2.png){ width=39% } ![](ConfusWeek3num2.png){ width=39% }
+</center>
+
+
+## -
+
+
+<center>
+![](PointWeek4num2.png){ width=75% }
+</center>
+
+
+<center>
+![](ConfusValWeek4num2.png){ width=39% } ![](ConfusWeek4num2.png){ width=39% }
+</center>
+
+
+## -
 
 
 
