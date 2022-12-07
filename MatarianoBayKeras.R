@@ -2,7 +2,7 @@ library(keras)
 
 library(lubridate)
 data = read.csv("MatarianoBayMaster.csv")
-par( mfrow= c(1,1) )
+par( mfrow= c(2,1) )
 
 data = data[,c(-1, -2, -4)]
 #data$date = mdy(data$date)
@@ -322,8 +322,9 @@ for (i in 1:50) {
     samp,
     lab,
     epochs = 1,
+    shuffle = TRUE 
     # validation_data = list(val, vlab),
-    shuffle = TRUE )
+  )
   
   print(i)
   
@@ -346,7 +347,7 @@ for (i in 1:50) {
   points(vres)
   lines(as.data.frame(lo))
     
-  readline(prompt = "space")
+  #readline(prompt = "space")
 
 }
 
@@ -365,9 +366,19 @@ library(caret)
 #function to get ideal threshold
 
 
-model = load_model_hdf5("MatarianoBay-2weeks-15-50-10/22-1.h5")
+model = load_model_hdf5("MatarianoBay-4weeks-15-50-10/22-2.h5")
 
-delay <- 2
+
+
+modelnumber = 2
+vmin = 480
+lookback <- 15
+delay <- 4
+copn = 0
+
+maxin = vmin-1
+leng =  (sum(data[(1):(maxin),1])*copn)
+vmax = nrow(data)-delay
 
 
 {
@@ -422,15 +433,9 @@ delay <- 2
 
 res = model %>% predict(samp)
 vres = model %>% predict(val)
-lab
-vlab
 
 re = c(as.vector(res), as.vector(vres))
 labs = c(lab, vlab)
-
-length(labs)
-
-
 
 low = seq(0.2, 0.8, .01)
 sol = rep(NA, length(low))
@@ -448,6 +453,10 @@ plot(sol~low)
 
 thresh = 0.5
 
+{
+
+datevar = read.csv("MatarianoBayMaster.csv")
+datevar = datevar[18:(593-delay),1]
 plotdf = data.frame(Reported = labs == 0,
           Predicted = re < thresh,
           Set = c(rep("Training", length(lab)), rep("Validation",length(vlab))))
@@ -456,32 +465,83 @@ plotdf[,-3][plotdf[,-3] == TRUE] = "SAFE"
 plotdf[,-3][plotdf[,-3] == FALSE] = "TOXIC"
 plotdf[,1] = factor(plotdf[,1])
 plotdf[,2] = factor(plotdf[,2])
+plotdf$value = re
+plotdf$Prediction = ((labs == 0) == ( re < thresh))
+plotdf$date = mdy(datevar)
 
 # plot of points with color
+
+ggplot(plotdf, aes(date, value))+
+  geom_point(aes(color = Prediction)) + 
+  facet_wrap(vars(Set), scales = "free_x", nrow =2)+
+  theme_pubclean() + 
+  labs(y = "Toxic Level ",title = paste("Predicting" , delay  , "Weeks Into The Future")) + theme(aspect.ratio = .13)
+
+  
+ggsave( paste0("PointWeek", delay, "#", modelnumber, ".png") ,width = 1000 , height = 600, units = "px", dpi = 155 )
+
 
 
 # confusion matrices
 
 
-confusionMatrix(plotdf[,1], plotdf[,2])
+tab = confusionMatrix(plotdf[,1], plotdf[,2])
 
-table <- data.frame(confusionMatrix(plotdf[,1], plotdf[,2])$table)
+table <- data.frame(tab$table)
+
+colnames(table) = c("Predicted","Reported","Freq")
 
 plotTable <- table %>%
-  mutate(goodbad = ifelse(table$Prediction == table$Reference, "good", "bad")) %>%
-  group_by(Reference) %>%
+  mutate(goodbad = ifelse(table$Predicted == table$Reported, "good", "bad")) %>%
+  group_by(Reported) %>%
   mutate(prop = Freq/sum(Freq))
 
-ggplot(plotTable, aes(x = Reference, y = Prediction, fill = goodbad, alpha = prop)) +
+ggplot(plotTable, aes(x = Reported, y = Predicted, fill = goodbad, alpha = prop)) +
   geom_tile() +
+  theme(legend.position = "none") +
   geom_text(aes(label = Freq), alpha = 1) +
-  scale_fill_manual(values = c(good = "green", bad = "red")) +
+  scale_fill_manual(values = c(good = "chartreuse3", bad = "maroon")) +
   theme_bw() +
-  xlim(rev(levels(table$Reference))) + 
-  guides(fill = "none")
+  xlim(rev(levels(table$Reported))) + 
+  guides(fill = "none", alpha = "none") +
+  labs(title = "Confusion Matrix All Weeks", subtitle  = paste("Accuracy overall:",round(tab$overall[1], 3)))
+
+
+ggsave(paste0("ConfusWeek", delay, "#", modelnumber, ".png"), height = 600, units = "px", dpi = 155 )
+
+tail(plotdf)
 
 
 
 
+plotdf = plotdf %>% 
+  filter(Set == "Validation")
 
+tab = confusionMatrix(plotdf[,1], plotdf[,2])
+
+table <- data.frame(tab$table)
+
+colnames(table) = c("Predicted","Reported","Freq")
+
+plotTable <- table %>%
+  mutate(goodbad = ifelse(table$Predicted == table$Reported, "good", "bad")) %>%
+  group_by(Reported) %>%
+  mutate(prop = Freq/sum(Freq))
+
+ggplot(plotTable, aes(x = Reported, y = Predicted, fill = goodbad, alpha = prop)) +
+  geom_tile() +
+  theme(legend.position = "none") +
+  geom_text(aes(label = Freq), alpha = 1) +
+  scale_fill_manual(values = c(good = "chartreuse3", bad = "maroon")) +
+  theme_bw() +
+  xlim(rev(levels(table$Reported))) + 
+  guides(fill = "none", alpha = "none") +
+  labs(title = "Confusion Matrix Validation Set", subtitle  = paste("Accuracy:", 
+                                         round(((sum(plotdf$Prediction)))
+                                               /length(vlab),3)))
+
+
+ggsave(paste0("ConfusValWeek", delay, "#", modelnumber, ".png"), height = 600, units = "px", dpi = 155 )
+
+}
 

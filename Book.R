@@ -133,7 +133,7 @@ evaluate_naive_method()
 celsius_mae <- 0.29 * std[[2]]
 
 
-model <- keras_model_sequential() %>%
+ model <- keras_model_sequential() %>%
   layer_flatten(input_shape = c(lookback / step, dim(data)[-1])) %>%
   layer_dense(units = 32, activation = "relu") %>%
   layer_dense(units = 1)
