@@ -1,131 +1,86 @@
 
 
+data = read.csv("7dayLabels.csv")[,2]
+
+coln = NA
+for (l in 1:length(mlist)) {
+  for (v in 1:length(mlist[[l]]$bands)) {
+    for (b in 2:length(mlist[[l]]$bands[[v]])) {
+     coln = c(coln, paste(nlist[l],mlist[[l]]$bands[[v]][[b]], sep = "_"))
+    }
+  }
+}
+
+coln = coln[-1]
 
 
-# function test
+fada = data.frame(matrix(NA, nrow = length(data), ncol = length(coln)))
 
-library(RGEEtools)
+colnames(fada) = coln
+
+fada = cbind(date = data, fada)
 
 
-start()
+for (v in 1:nrow(fada)) {
 
-obj = ROI("[120.02539327697872, 14.878475482547286],
-          [120.02539327697872, 14.205856570093683],
-          [120.98669698791622, 14.205856570093683],
-          [120.98669698791622, 14.878475482547286]")
-
-bay = ROI("[120.58844259338497, 14.724459912541365],
-          [120.58844259338497, 14.482595767804597],
-          [120.93725851135372, 14.482595767804597],
-          [120.93725851135372, 14.724459912541365]")
-
-geex = function(band, startdate, enddate, roi){
+  eday = fada[v,1]
+  ed = ymd(eday)
+  sd = ed - 7
+  sday = as.character(sd)
+  x = 2
   
-  startdate = as.character(startdate)
-  enddate = as.character(enddate)
-  
-  
-  temp = ee$ImageCollection(band)$
-    filterDate( startdate, enddate)$mean()$
-    sample(region = roi, scale = 120000 , geometries = TRUE)$getInfo()
+  for (l in 1:length(mlist)) {
+    for (b in 1:length(mlist[[l]]$bands)) {
+      if(length(mlist[[l]]$bands[[b]]) == 3){
+        try({temp = ee$ImageCollection(mlist[[l]]$bands[[b]][[1]])$
+          filterDate( sday, eday )$mean()$
+          select(c(mlist[[l]]$bands[[b]][[2]], mlist[[l]]$bands[[b]][[3]]))$
+          sample(region = mlist[[l]]$loc, scale = 9000, geometries = TRUE)$getInfo()})
+        
+        fada[v,x:(x+1)] = c(try({mean(geetodf(temp)[,3])}), try({mean(geetodf(temp)[,4])}))
+        
+        x = x + 2
+      }
+      else{
+        try({temp = ee$ImageCollection(mlist[[l]]$bands[[b]][[1]])$
+          filterDate( sday, eday )$mean()$
+          select(mlist[[l]]$bands[[b]][[2]])$
+          sample(region = mlist[[l]]$loc, scale = 9000, geometries = TRUE)$getInfo()})
+        
+        fada[v,x] = try({mean(geetodf(temp)[,3])})
+        
+        x = x + 1
+      }
+      print(x)
+    }
+    print(v/length(data))
+  }
 
-  return(geetodf(temp))
 }
 
 
-band = "NOAA/CDR/AVHRR/AOT/V3"
-startdate = '2018-02-01'
-enddate = '2018-03-01'
 
-keep = rep(NA, length(data[,1]))
-
-
-for (i in 1:length(data[,1])) {
-  sday = ymd(data[,1][i])
-  eday = sday + 7
-  keet =  geex("NOAA/CDR/AVHRR/AOT/V3", sday, eday, obj)
-  if(isFALSE(nrow(keet) == 0))
-  print(nrow(keet))
-  keep[i] = mean(keet[,3])
-  
+for (i in 2:length(fada)) {
+  plot(as.numeric(fada[,i]), main = paste0(coln[i-1],"_new"))
 }
 
 
-sday = as.character(sday)
-eday = as.character(eday)
-
-temp = ee$ImageCollection(band)$
-  filterDate( sday, eday)$mean()$
-  sample(region = obj, scale = 120000 , geometries = TRUE)$getInfo()
-
-return(geetodf(temp))
-
-
-
-te =  geex("NOAA/CDR/AVHRR/AOT/V3", sday, eday, obj)
-
-
-fax = geex("NOAA/CDR/AVHRR/AOT/V3", '2018-02-01', '2018-03-01', obj )
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-  temp = ee$ImageCollection('NOAA/NCEP_DOE_RE2/total_cloud_coverage')$
-    filterDate( '2018-02-01', '2018-03-01' )$select("tcdc")$mean()$
-    sample(region = obj, scale = 120000 , geometries = TRUE, seed = 10)$getInfo()
-    
-  clou = mean((geetodf(temp)[,3]))
-  
-temp = ee$ImageCollection('NASA/GPM_L3/IMERG_V06')$
-  filterDate( idate , date )$select("precipitationCal")$mean()$
-  sample(region = obj, scale = scale , geometries = TRUE, seed = 10)$getInfo()
-rain = mean((geetodf(temp)[,3]))  
-
-return(c(clou, rain))
 
 
 
 
+lab = read.csv('7dayLabels.csv')
 
-rob = function(x){
-  temp = wttolist(depth = 0, date = list, interval = 7, ROI = x[[1]], scale = x[[3]])
-  tem = mean((geetodf(temp)[,3]*0.001)+20)
-  tem = tem - x$var$temp[[yday(list)]]
-  
-  temp = wstolist(depth = 0, date = list, interval = 7, ROI = x[[1]], scale = x[[3]])
-  sal = mean((geetodf(temp)[,3]))
-  sal = sal - x$var$Sal[[yday(list)]]
-  
-  temp = wvtolist(depth = 0, date = list, interval = 7, ROI = x[[1]], scale = x[[3]])
-  velu = mean((geetodf(temp)[,3]))
-  velv = mean((geetodf(temp)[,4]))
-  velu = velu - x$var$Velu[[yday(list)]]
-  velv = velv - x$var$Velv[[yday(list)]]
-  
-  if(x[[2]] == 1){
-    
-    temp = wttolist(depth = x[[4]], date = list, interval = 7, ROI = x[[1]], scale = x[[3]])
-    temd = mean((geetodf(temp)[,3]*0.001)+20)
-    
-    temp = wstolist(depth = x[[4]], date = list, interval = 7, ROI = x[[1]], scale = x[[3]])
-    sald = mean((geetodf(temp)[,3]))
+write.csv(cbind(date = fada[,1],lab = lab$X61,fada[,2:10]), "7dayData/balite.csv", row.names = FALSE)
+write.csv(cbind(date = fada[,1],lab = lab$X131,fada[,11:31]), "7dayData/BolinaoandAnda.csv", row.names = FALSE)
+write.csv(cbind(date = fada[,1],lab = lab$X32,fada[,32:47]), "7dayData/matariano.csv", row.names = FALSE)
+write.csv(cbind(date = fada[,1],lab = lab$X101,fada[,48:72]), "7dayData/milagros.csv", row.names = FALSE)
+write.csv(cbind(date = fada[,1],lab = lab$X41,fada[,73:88]), "7dayData/carigara.csv", row.names = FALSE)
+write.csv(cbind(date = fada[,1],lab = lab$X33,fada[,73:88]), "7dayData/cambatutay.csv", row.names = FALSE)
+write.csv(cbind(date = fada[,1],lab = lab$X31,fada[,73:88]), "7dayData/irong-irong.csv", row.names = FALSE)
+write.csv(cbind(date = fada[,1],lab = lab$X14,fada[,89:104]), "7dayData/bataan.csv", row.names = FALSE)
 
+ 
 
-
-
-
-
-
-
-
+ 
 
