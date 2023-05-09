@@ -238,18 +238,11 @@ print(keep1)
 
 
 
+write.csv(params, "results.csv")
 
 
 
-
-
-
-
-
-
-
-
-params[order(params$try),]
+params[order(params$mse),]
 
 
 
