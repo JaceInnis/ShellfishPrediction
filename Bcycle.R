@@ -10,16 +10,9 @@ params = data.frame(error = NA, epoch = NA, lookback = NA,
                     var = NA, dropout = NA, layer = NA, mse = NA, cut = NA)
 
 
-keep1 = 99
-keep2 = 99
-keep3 = 99
-stanerr1 = 99
-stanerr2 = 99
 
 
-sit = "MatarianoTEST"
-
-cut = 2      #change this
+cut = 1    #change this
   
 
     
@@ -56,11 +49,11 @@ cut = 2      #change this
     
     
     
-    lookb = 2             # change this 
+    lookb = 0     # change this 
       
       
       lookback <- 6+lookb
-      delay <- 4
+      delay <- 3
       dat = array(NA, dim = c(  length(fada[(-1:-40),2]) , lookback , (length(fada)-1)))
       lab = rep(NA, dim(dat)[1])
       
@@ -79,7 +72,7 @@ cut = 2      #change this
       
       print(lookb)
       
-      varpo = 3      #change this
+      varpo = 3    #change this
         
         
         dat = data2[,,vars[[varpo]]]
@@ -87,24 +80,21 @@ cut = 2      #change this
         labt = lab[trainvec]
         val = dat[valvec,,]
         vlab = lab[valvec]
-        
-        
-        for (d in 1:2) {
           
-          dropout = .1*d
+          dropout = .1
 
           
             
 
           
               model <- keras_model_sequential() %>%
-                layer_lstm(units = 12 , 
+                layer_lstm(units = 120 , 
                            dropout = dropout, 
                            recurrent_dropout = dropout,
                            return_sequences=TRUE,
                            input_shape = list(NULL, (dim(dat)[[3]]))) %>%
-                layer_lstm(units = 16 , activation = "sigmoid") %>% 
-                layer_dense(units = 10 , activation = "sigmoid") %>% 
+                layer_lstm(units = 360, activation = "sigmoid") %>% 
+                layer_dense(units = 100 , activation = "sigmoid") %>% 
                 layer_dense(units = 1 , activation = "sigmoid") %>% 
                 compile(
                   optimizer = "rmsprop",
@@ -133,3 +123,6 @@ cut = 2      #change this
               points(vres)
             }
             
+        
+        
+        
